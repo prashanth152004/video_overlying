@@ -1,0 +1,43 @@
+[Script Info]
+Title: English Translated Subtitles
+ScriptType: v4.00+
+WrapStyle: 1
+ScaledBorderAndShadow: yes
+PlayResX: 1920
+PlayResY: 1080
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Roboto,50,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,3,2,10,10,60,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.60,Default,,0,0,0,,Namaste sir, how are you doing?
+Dialogue: 0,0:00:02.60,0:00:05.00,Default,,0,0,0,,Namaste ma'am, I am Harshant from\NJaipinagar.
+Dialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,We have heard about the facts of the\Ncase.
+Dialogue: 0,0:00:08.00,0:00:10.00,Default,,0,0,0,,We have been trying for just 2-3\Nmonths.
+Dialogue: 0,0:00:10.00,0:00:15.00,Default,,0,0,0,,We have immediately responded to the\Nfirst meeting, created a WhatsApp
+Dialogue: 0,0:00:15.00,0:00:18.00,Default,,0,0,0,,came to the boardroom, they have\Ncreated an open house.
+Dialogue: 0,0:00:18.00,0:00:20.00,Default,,0,0,0,,I am Harish sir, he is the chairman.
+Dialogue: 0,0:00:20.00,0:00:22.00,Default,,0,0,0,,He has been working for a long time.
+Dialogue: 0,0:00:22.00,0:00:23.00,Default,,0,0,0,,All that is a big deal.
+Dialogue: 0,0:00:23.00,0:00:25.00,Default,,0,0,0,,This open house is attended by\Neveryone.
+Dialogue: 0,0:00:25.00,0:00:28.00,Default,,0,0,0,,Everyone is in the common man, in\Nthe other background,
+Dialogue: 0,0:00:28.00,0:00:31.00,Default,,0,0,0,,sitting together in the boardroom,\Ntalking to everyone,
+Dialogue: 0,0:00:31.00,0:00:34.00,Default,,0,0,0,,asking about the case, to the\Nofficials,
+Dialogue: 0,0:00:34.00,0:00:36.00,Default,,0,0,0,,to the officials who are involved in\Nthe zone,
+Dialogue: 0,0:00:36.00,0:00:38.00,Default,,0,0,0,,to make this kind of direction.
+Dialogue: 0,0:00:38.00,0:00:40.00,Default,,0,0,0,,It is very good.
+Dialogue: 0,0:00:40.00,0:00:42.00,Default,,0,0,0,,We are very happy as citizens.
+Dialogue: 0,0:00:42.00,0:00:43.00,Default,,0,0,0,,So what I am telling you is,
+Dialogue: 0,0:00:43.00,0:00:46.00,Default,,0,0,0,,this is the grievance related to the\NBDX.
+Dialogue: 0,0:00:46.00,0:00:48.00,Default,,0,0,0,,Just contact me on WhatsApp.
+Dialogue: 0,0:00:48.00,0:00:50.00,Default,,0,0,0,,I will send messages on WhatsApp.
+Dialogue: 0,0:00:50.00,0:00:51.00,Default,,0,0,0,,They have created a token system.
+Dialogue: 0,0:00:51.00,0:00:53.00,Default,,0,0,0,,It is a very good initiative.
+Dialogue: 0,0:00:53.00,0:00:56.00,Default,,0,0,0,,Everything is getting streamed live\Non YouTube.
+Dialogue: 0,0:00:56.00,0:00:58.00,Default,,0,0,0,,So, if people are sitting together,
+Dialogue: 0,0:00:58.00,0:01:00.00,Default,,0,0,0,,watching YouTube videos,
+Dialogue: 0,0:01:00.00,0:01:01.00,Default,,0,0,0,,if they are doing so much,
+Dialogue: 0,0:01:01.00,0:01:03.00,Default,,0,0,0,,they will solve the problem.
+Dialogue: 0,0:01:03.00,0:01:04.00,Default,,0,0,0,,Thank you very much.
