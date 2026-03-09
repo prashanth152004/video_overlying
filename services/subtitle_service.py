@@ -6,56 +6,33 @@ class SubtitleEngine:
     def __init__(self, work_dir: Path):
         self.work_dir = work_dir
 
-    def format_time_ass(self, seconds: float) -> str:
-        """Format seconds into ASS timestamp Format: h:mm:ss.cs"""
+    def format_time_vtt(self, seconds: float) -> str:
+        """Format seconds into VTT timestamp Format: hh:mm:ss.millis"""
         h = int(seconds // 3600)
         m = int((seconds % 3600) // 60)
         s = int(seconds % 60)
-        cs = int(round((seconds - int(seconds)) * 100))
-        return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
+        ms = int(round((seconds - int(seconds)) * 1000))
+        return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
 
-    def generate_subtitles(self, transcript: list) -> str:
+    def generate_subtitles(self, transcript: list, language: str = "en") -> str:
         """
-        Generate .ass (Advanced SubStation Alpha) file
-        Constraints:
-        - Max 2 lines
-        - 32-40 chars per line
-        - Roboto/Arial Sans-Serif
-        - Bottom Center + Safe Margins
-        - Soft black shadow
+        Generate .vtt (WebVTT) file for native HTML5/Streamlit video players.
         """
-        ass_path = str(self.work_dir / "subtitles.ass")
+        vtt_path = str(self.work_dir / f"subtitles_{language}.vtt")
         
-        # ASS Header with styling parameters
-        ass_content = [
-            "[Script Info]",
-            "Title: English Translated Subtitles",
-            "ScriptType: v4.00+",
-            "WrapStyle: 1", # 1 = End-of-line word wrapping, only \N breaks
-            "ScaledBorderAndShadow: yes",
-            "PlayResX: 1920",
-            "PlayResY: 1080",
-            "",
-            "[V4+ Styles]",
-            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-            # Alignment 2 = Bottom Center. MarginV 60 = Safe Margin
-            "Style: Default,Roboto,50,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,3,2,10,10,60,1",
-            "",
-            "[Events]",
-            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
-        ]
+        vtt_content = ["WEBVTT\n"]
         
-        print("[SubtitleEngine] Generating .ass subtitles with constrained line-wrapping...")
-        for segment in transcript:
-            start = self.format_time_ass(segment["start"])
-            end = self.format_time_ass(segment["end"])
+        print(f"[SubtitleEngine] Generating .vtt subtitles for {language}...")
+        for i, segment in enumerate(transcript):
+            start = self.format_time_vtt(segment["start"])
+            end = self.format_time_vtt(segment["end"])
             
-            # Very basic word wrap at ~35 chars avoiding word splits mid-phrase
+            # Very basic word wrap at ~40 chars avoiding word splits mid-phrase
             words = segment["text"].split()
             lines = []
             curr_line = ""
             for word in words:
-                if len(curr_line) + len(word) > 36:
+                if len(curr_line) + len(word) > 40:
                     lines.append(curr_line.strip())
                     curr_line = word + " "
                 else:
@@ -65,12 +42,17 @@ class SubtitleEngine:
                 
             # Restrict to 2 lines max
             lines = lines[:2]
-            text_formatted = "\\N".join(lines)
+            text_formatted = "\n".join(lines)
             
-            event_line = f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text_formatted}"
-            ass_content.append(event_line)
+            # VTT Block:
+            # 1
+            # 00:00:01.000 --> 00:00:04.000
+            # Text line 1
+            # Text line 2
+            vtt_block = f"{i+1}\n{start} --> {end}\n{text_formatted}\n"
+            vtt_content.append(vtt_block)
 
-        with open(ass_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(ass_content))
+        with open(vtt_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(vtt_content))
             
-        return ass_path
+        return vtt_path

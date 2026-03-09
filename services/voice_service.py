@@ -35,12 +35,12 @@ class VoiceCloningService:
         sample.export(sample_path, format="wav")
         return sample_path
 
-    def generate_speech(self, transcript: list, reference_audio: str) -> list:
+    def generate_speech(self, transcript: list, reference_audio: str, language: str = "en") -> list:
         """
-        Generate English speech cloned from the original speaker voice.
+        Generate speech cloned from the original speaker voice.
         Returns the transcript updated with paths to the synthetic audio segments.
         """
-        print(f"[VoiceCloningService] Generating English speech for {len(transcript)} segments...")
+        print(f"[VoiceCloningService] Generating {language} speech for {len(transcript)} segments...")
         
         # We need a fallback full sample if there's no specific clear segment
         # In a robust implementation, we'd pick the cleanest 5-10s clip of the speaker
@@ -61,12 +61,12 @@ class VoiceCloningService:
                 print(f"[VoiceCloningService] ERROR: Speaker sample not found at {default_sample}")
                 raise FileNotFoundError(f"Speaker sample missing: {default_sample}")
 
-            # Use original voice to speak english text
+            # Use original voice to speak translated text
             try:
                 self.tts.tts_to_file(
                     text=text,
                     speaker_wav=default_sample,
-                    language="en",
+                    language=language,
                     file_path=out_path
                 )
             except Exception as e:

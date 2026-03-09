@@ -46,24 +46,19 @@ class VideoService:
         
         return str(audio_out_path), metadata
 
-    def render_final_video(self, input_video_path: str, mixed_audio_path: str, subtitle_ass_path: str) -> str:
-        """Burn subtitles and mux with mixed audio using FFmpeg."""
-        output_path = str(self.work_dir / "final_output.mp4")
-        
-        # This builds an ffmpeg command to add subtitles and replace audio stream.
-        # Ensure subtitle file path is escaped for ffmpeg filter syntax
-        esc_sub_path = subtitle_ass_path.replace("\\", "/").replace(":", "\\:")
+    def render_final_video(self, input_video_path: str, mixed_audio_path: str, language: str) -> str:
+        """Mux the mixed audio back into the original video (without re-encoding video)."""
+        output_path = str(self.work_dir / f"final_output_{language}.mp4")
         
         cmd = [
             "ffmpeg", "-y", 
             "-i", input_video_path,
             "-i", mixed_audio_path,
-            "-filter_complex", f"[0:v]subtitles='{esc_sub_path}'[v]",
-            "-map", "[v]", "-map", "1:a",
-            "-c:v", "libx264", "-c:a", "aac", "-b:a", "192k",
+            "-map", "0:v", "-map", "1:a",
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
             output_path
         ]
         
-        print("[VideoService] Rendering final video with subtitles...")
+        print(f"[VideoService] Fast-muxing audio ({language}) into video...")
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         return output_path

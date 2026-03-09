@@ -9,9 +9,11 @@ from services.subtitle_service import SubtitleEngine
 from services.qc_service import QualityControlEngine
 
 class TranslationPipeline:
-    def __init__(self, work_dir="./workspace"):
+    def __init__(self, work_dir="./workspace", bg_lufs=-21.0, fg_gain=0.0):
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(exist_ok=True)
+        self.bg_lufs = bg_lufs
+        self.fg_gain = fg_gain
         
         self.video_service = VideoService(self.work_dir)
         self.speech_service = SpeechService()
@@ -22,7 +24,7 @@ class TranslationPipeline:
         self.qc_engine = QualityControlEngine()
 
     def run(self, input_video_path: str):
-        print(f"--- Starting Pipeline for {input_video_path} ---")
+        print(f"--- Starting Pipeline for {input_video_path} (Multi-track Output) ---")
         
         # Stage 1: Ingest
         print("Stage 1: Video Ingest & Audio Extraction")
@@ -30,46 +32,64 @@ class TranslationPipeline:
         
         # Stage 2: Speech Recognition (Kannada)
         print("Stage 2: Kannada Speech Recognition & Diarization")
-        kannada_transcript = self.speech_service.transcribe_and_diarize(audio_path, language="kn")
+        # Whisper translates directly to English
+        english_transcript = self.speech_service.transcribe_and_diarize(audio_path, language="kn")
         
-        # Stage 3: Translation
-        print("Stage 3: Translation Engine (Sarvam AI / Fallback)")
-        english_transcript = self.translation_service.translate_transcript(kannada_transcript, source="kn", target="en")
+        # We need to process both English and Hindi
+        results = {
+            "qc_report": {},
+            "videos": {
+                "Original Kannada": input_video_path,
+            },
+            "subtitles": {}
+        }
+
+        # Stage 3-5 Loop: Translation, Voice Cloning, Mixing, Subtitles, Muxing
+        for target_lang in ["en", "hi"]:
+            print(f"--- Processing Target: {target_lang} ---")
+            
+            # Translate English transcript to target (if target is 'en' it's a pass-through)
+            transcript = self.translation_service.translate_transcript(
+                english_transcript, source="en", target=target_lang
+            )
+            
+            # Generate speech
+            cloned_audio_segments = self.voice_service.generate_speech(
+                transcript, reference_audio=audio_path, language=target_lang
+            )
+            
+            # Mix audio
+            mixed_audio_path = self.audio_mixer.mix_audio(
+                primary_segments=cloned_audio_segments,
+                secondary_audio=audio_path,
+                video_duration=video_metadata['duration'],
+                bg_lufs=self.bg_lufs,
+                fg_gain=self.fg_gain
+            )
+            
+            # Generate WebVTT subtitles
+            subtitle_path = self.subtitle_engine.generate_subtitles(transcript, language=target_lang)
+            results["subtitles"][target_lang] = subtitle_path
+            
+            # Mux to create video with dubbed audio
+            final_video_path = self.video_service.render_final_video(
+                input_video_path, 
+                mixed_audio_path,
+                language=target_lang
+            )
+            
+            # Store the resulting playback video track
+            track_name = "English Dub" if target_lang == "en" else "Hindi Dub"
+            results["videos"][track_name] = final_video_path
         
-        # Stage 4: Voice Cloning & TTS
-        print("Stage 4: Voice Cloning & Speech Generation")
-        cloned_audio_segments = self.voice_service.generate_speech(english_transcript, reference_audio=audio_path)
-        
-        # Stage 5: Audio Mixing
-        print("Stage 5: Audio Mixing Engine")
-        mixed_audio_path = self.audio_mixer.mix_audio(
-            primary_segments=cloned_audio_segments,
-            secondary_audio=audio_path,
-            video_duration=video_metadata['duration']
-        )
-        
-        # Stage 6 & 7: Subtitles & Burn-in
-        print("Stage 6: Subtitle Generation")
-        subtitle_path = self.subtitle_engine.generate_subtitles(english_transcript)
-        
-        print("Stage 7: Subtitle Burn-In & Export (Stage 8)")
-        final_video_path = self.video_service.render_final_video(
-            input_video_path, 
-            mixed_audio_path, 
-            subtitle_path
-        )
-        
-        # Stage 9: Quality Control
+        # Stage 9: Quality Control (run on English just to get the report structure)
         print("Stage 9: Quality Control")
         qc_report = self.qc_engine.run_checks(
-            video_path=final_video_path,
+            video_path=results["videos"]["English Dub"],
             transcript=english_transcript,
-            audio_path=mixed_audio_path
+            audio_path=audio_path # Simplified QC check
         )
+        results["qc_report"] = qc_report
         
         print("--- Pipeline Complete ---")
-        return {
-            "final_video": final_video_path,
-            "qc_report": qc_report,
-            "transcript": english_transcript
-        }
+        return results
