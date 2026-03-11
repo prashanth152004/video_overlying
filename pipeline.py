@@ -9,7 +9,7 @@ from services.subtitle_service import SubtitleEngine
 from services.qc_service import QualityControlEngine
 
 class TranslationPipeline:
-    def __init__(self, work_dir="./workspace", bg_lufs=-21.0, fg_gain=0.0):
+    def __init__(self, work_dir="./workspace", bg_lufs=-25.0, fg_gain=0.0):
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(exist_ok=True)
         self.bg_lufs = bg_lufs
@@ -41,7 +41,10 @@ class TranslationPipeline:
             "videos": {
                 "Original Kannada": input_video_path,
             },
-            "subtitles": {}
+            "subtitles": {},
+            "audio_tracks": {
+                "Original Kannada": audio_path
+            }
         }
 
         # Stage 3-5 Loop: Translation, Voice Cloning, Mixing, Subtitles, Muxing
@@ -59,28 +62,58 @@ class TranslationPipeline:
             )
             
             # Mix audio
-            mixed_audio_path = self.audio_mixer.mix_audio(
+            mixed_audio_path, fg_audio_path = self.audio_mixer.mix_audio(
                 primary_segments=cloned_audio_segments,
                 secondary_audio=audio_path,
                 video_duration=video_metadata['duration'],
                 bg_lufs=self.bg_lufs,
-                fg_gain=self.fg_gain
+                fg_gain=self.fg_gain,
+                language=target_lang
             )
             
             # Generate WebVTT subtitles
             subtitle_path = self.subtitle_engine.generate_subtitles(transcript, language=target_lang)
             results["subtitles"][target_lang] = subtitle_path
             
-            # Mux to create video with dubbed audio
-            final_video_path = self.video_service.render_final_video(
+            # Mux to create video with dubbed audio (mixed/overlaying)
+            final_video_path_mixed = self.video_service.render_final_video(
                 input_video_path, 
                 mixed_audio_path,
-                language=target_lang
+                language=f"{target_lang}_mixed"
             )
             
-            # Store the resulting playback video track
-            track_name = "English Dub" if target_lang == "en" else "Hindi Dub"
-            results["videos"][track_name] = final_video_path
+            # Mux to create video with dubbed audio (foreground only)
+            final_video_path_fg = self.video_service.render_final_video(
+                input_video_path, 
+                fg_audio_path,
+                language=f"{target_lang}_fg"
+            )
+            
+            # Store the resulting playback video tracks and audio tracks for multitrack render
+            if target_lang == "en":
+                results["videos"]["English Dub"] = final_video_path_fg
+                results["videos"]["English (overlaying)"] = final_video_path_mixed
+                results["audio_tracks"]["English Dub"] = fg_audio_path
+                results["audio_tracks"]["English (overlaying)"] = mixed_audio_path
+            elif target_lang == "hi":
+                results["videos"]["Hindi Dub"] = final_video_path_fg
+                results["videos"]["Hindi (overlaying)"] = final_video_path_mixed
+                results["audio_tracks"]["Hindi Dub"] = fg_audio_path
+                results["audio_tracks"]["Hindi (overlaying)"] = mixed_audio_path
+            else:
+                results["videos"][f"{target_lang} Dub"] = final_video_path_fg
+                results["videos"][f"{target_lang} (overlaying)"] = final_video_path_mixed
+                results["audio_tracks"][f"{target_lang} Dub"] = fg_audio_path
+                results["audio_tracks"][f"{target_lang} (overlaying)"] = mixed_audio_path
+        
+        # Stage X: Generate Master Multi-Track Video
+        print("--- Rendering Master Multi-Track Video ---")
+        multitrack_video_path = self.video_service.render_multitrack_video(
+            input_video_path=input_video_path,
+            audio_tracks=results["audio_tracks"],
+            subtitle_tracks=results["subtitles"]
+        )
+        results["master_video"] = multitrack_video_path
         
         # Stage 9: Quality Control (run on English just to get the report structure)
         print("Stage 9: Quality Control")

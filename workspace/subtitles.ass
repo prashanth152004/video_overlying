@@ -12,32 +12,32 @@ Style: Default,Roboto,50,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,10
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:02.60,Default,,0,0,0,,Namaste sir, how are you doing?
-Dialogue: 0,0:00:02.60,0:00:05.00,Default,,0,0,0,,Namaste ma'am, I am Harshant from\NJaipinagar.
-Dialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,We have heard about the facts of the\Ncase.
-Dialogue: 0,0:00:08.00,0:00:10.00,Default,,0,0,0,,We have been trying for just 2-3\Nmonths.
-Dialogue: 0,0:00:10.00,0:00:15.00,Default,,0,0,0,,We have immediately responded to the\Nfirst meeting, created a WhatsApp
-Dialogue: 0,0:00:15.00,0:00:18.00,Default,,0,0,0,,came to the boardroom, they have\Ncreated an open house.
-Dialogue: 0,0:00:18.00,0:00:20.00,Default,,0,0,0,,I am Harish sir, he is the chairman.
-Dialogue: 0,0:00:20.00,0:00:22.00,Default,,0,0,0,,He has been working for a long time.
-Dialogue: 0,0:00:22.00,0:00:23.00,Default,,0,0,0,,All that is a big deal.
-Dialogue: 0,0:00:23.00,0:00:25.00,Default,,0,0,0,,This open house is attended by\Neveryone.
-Dialogue: 0,0:00:25.00,0:00:28.00,Default,,0,0,0,,Everyone is in the common man, in\Nthe other background,
-Dialogue: 0,0:00:28.00,0:00:31.00,Default,,0,0,0,,sitting together in the boardroom,\Ntalking to everyone,
-Dialogue: 0,0:00:31.00,0:00:34.00,Default,,0,0,0,,asking about the case, to the\Nofficials,
-Dialogue: 0,0:00:34.00,0:00:36.00,Default,,0,0,0,,to the officials who are involved in\Nthe zone,
-Dialogue: 0,0:00:36.00,0:00:38.00,Default,,0,0,0,,to make this kind of direction.
-Dialogue: 0,0:00:38.00,0:00:40.00,Default,,0,0,0,,It is very good.
-Dialogue: 0,0:00:40.00,0:00:42.00,Default,,0,0,0,,We are very happy as citizens.
-Dialogue: 0,0:00:42.00,0:00:43.00,Default,,0,0,0,,So what I am telling you is,
-Dialogue: 0,0:00:43.00,0:00:46.00,Default,,0,0,0,,this is the grievance related to the\NBDX.
-Dialogue: 0,0:00:46.00,0:00:48.00,Default,,0,0,0,,Just contact me on WhatsApp.
-Dialogue: 0,0:00:48.00,0:00:50.00,Default,,0,0,0,,I will send messages on WhatsApp.
-Dialogue: 0,0:00:50.00,0:00:51.00,Default,,0,0,0,,They have created a token system.
-Dialogue: 0,0:00:51.00,0:00:53.00,Default,,0,0,0,,It is a very good initiative.
-Dialogue: 0,0:00:53.00,0:00:56.00,Default,,0,0,0,,Everything is getting streamed live\Non YouTube.
-Dialogue: 0,0:00:56.00,0:00:58.00,Default,,0,0,0,,So, if people are sitting together,
-Dialogue: 0,0:00:58.00,0:01:00.00,Default,,0,0,0,,watching YouTube videos,
-Dialogue: 0,0:01:00.00,0:01:01.00,Default,,0,0,0,,if they are doing so much,
-Dialogue: 0,0:01:01.00,0:01:03.00,Default,,0,0,0,,they will solve the problem.
-Dialogue: 0,0:01:03.00,0:01:04.00,Default,,0,0,0,,Thank you very much.
+Dialogue: 0,0:00:00.00,0:00:02.60,Default,,0,0,0,,नमस्ते सर, आप कैसे हैं?
+Dialogue: 0,0:00:02.60,0:00:05.00,Default,,0,0,0,,नमस्ते मैडम, मैं हर्षान्त जयपुर से\Nहूं।
+Dialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,हमने मामले के तथ्यों के बारे में\Nसुना है।
+Dialogue: 0,0:00:08.00,0:00:10.00,Default,,0,0,0,,हम सिर्फ 2-3 महीने से कोशिश कर रहे\Nहैं.'
+Dialogue: 0,0:00:10.00,0:00:15.00,Default,,0,0,0,,हमने पहली मीटिंग पर तुरंत\Nप्रतिक्रिया दी, एक व्हाट्सएप सिस्टम
+Dialogue: 0,0:00:15.00,0:00:18.00,Default,,0,0,0,,बोर्डरूम में आये, उन्होंने एक खुला\Nघर बनाया है।
+Dialogue: 0,0:00:18.00,0:00:20.00,Default,,0,0,0,,मैं हरीश सर हूं, ये चेयरमैन हैं.
+Dialogue: 0,0:00:20.00,0:00:22.00,Default,,0,0,0,,वह काफी समय से काम कर रहे हैं.
+Dialogue: 0,0:00:22.00,0:00:23.00,Default,,0,0,0,,ये सब बहुत बड़ी बात है.
+Dialogue: 0,0:00:23.00,0:00:25.00,Default,,0,0,0,,इस खुले घर में सभी लोग शामिल होते\Nहैं।
+Dialogue: 0,0:00:25.00,0:00:28.00,Default,,0,0,0,,हर कोई आम आदमी में है, दूसरी\Nपृष्ठभूमि में,
+Dialogue: 0,0:00:28.00,0:00:31.00,Default,,0,0,0,,बोर्डरूम में एक साथ बैठना, सबसे बात\Nकरना,
+Dialogue: 0,0:00:31.00,0:00:34.00,Default,,0,0,0,,अधिकारियों से मामले की जानकारी ली
+Dialogue: 0,0:00:34.00,0:00:36.00,Default,,0,0,0,,जोन से जुड़े अधिकारियों को,
+Dialogue: 0,0:00:36.00,0:00:38.00,Default,,0,0,0,,इस तरह की दिशा बनाने के लिए.
+Dialogue: 0,0:00:38.00,0:00:40.00,Default,,0,0,0,,बहुत अच्छा है।
+Dialogue: 0,0:00:40.00,0:00:42.00,Default,,0,0,0,,हम नागरिक के रूप में बहुत खुश हैं।
+Dialogue: 0,0:00:42.00,0:00:43.00,Default,,0,0,0,,तो जो मैं आपको बता रहा हूं वह है,
+Dialogue: 0,0:00:43.00,0:00:46.00,Default,,0,0,0,,यह BDX से संबंधित शिकायत है.
+Dialogue: 0,0:00:46.00,0:00:48.00,Default,,0,0,0,,बस मुझसे व्हाट्सएप पर संपर्क करें।
+Dialogue: 0,0:00:48.00,0:00:50.00,Default,,0,0,0,,मैं व्हाट्सएप पर संदेश भेजूंगा.
+Dialogue: 0,0:00:50.00,0:00:51.00,Default,,0,0,0,,उन्होंने एक टोकन सिस्टम बनाया है.
+Dialogue: 0,0:00:51.00,0:00:53.00,Default,,0,0,0,,यह बहुत अच्छी पहल है.
+Dialogue: 0,0:00:53.00,0:00:56.00,Default,,0,0,0,,सब कुछ यूट्यूब पर लाइव स्ट्रीम हो\Nरहा है.
+Dialogue: 0,0:00:56.00,0:00:58.00,Default,,0,0,0,,तो, अगर लोग एक साथ बैठे हैं,
+Dialogue: 0,0:00:58.00,0:01:00.00,Default,,0,0,0,,यूट्यूब वीडियो देखना,
+Dialogue: 0,0:01:00.00,0:01:01.00,Default,,0,0,0,,यदि वे इतना कुछ कर रहे हैं,
+Dialogue: 0,0:01:01.00,0:01:03.00,Default,,0,0,0,,वे समस्या का समाधान करेंगे.
+Dialogue: 0,0:01:03.00,0:01:04.00,Default,,0,0,0,,आपका बहुत-बहुत धन्यवाद।

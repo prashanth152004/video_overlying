@@ -10,7 +10,6 @@ deep-translator==1.11.4      # Stage 3: Free Translation (Google Translate fallb
 pydub==0.25.1                # Stage 5: Audio mixing, EQ
 pyloudnorm==0.1.1            # Stage 5: LUFS normalization
 soundfile==0.12.1            # Audio file I/O
-librosa==0.10.1              # Advanced audio analysis (optional helper)
 
 # Video Processing & Subtitles
 ffmpeg-python==0.2.0         # Stages 1, 6-8: Video processing, audio extraction, burn-in
@@ -21,8 +20,7 @@ streamlit==1.32.2            # Simple frontend UI
 python-dotenv==1.0.1         # Environment variable management
 
 # Utilities
-numpy==1.26.4
-scipy==1.13.0
-Requests==2.31.0
-tqdm==4.66.2
-torchcodec==0.10.0
+numpy
+scipy
+Requests
+tqdm

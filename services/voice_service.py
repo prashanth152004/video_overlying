@@ -27,9 +27,17 @@ class VoiceCloningService:
         self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(self.device)
 
     def extract_speaker_sample(self, reference_audio: str, start: float, end: float) -> str:
-        """Extract a small clean sample of the speaker for cloning."""
+        """Extract a small clean sample of the speaker for cloning, filtering out background noise."""
         audio = AudioSegment.from_file(reference_audio)
         sample = audio[start * 1000 : end * 1000]
+        
+        # Pre-process the reference sample so the AI doesn't clone background noise/muddiness
+        # 1. Normalize the volume so the model hears the voice clearly
+        sample = sample.normalize()
+        # 2. High-pass filter to remove low rumble, wind noise, mic bumps
+        sample = sample.high_pass_filter(100)
+        # 3. Low-pass filter to remove high-frequency background hiss/static
+        sample = sample.low_pass_filter(8000)
         
         sample_path = str(self.work_dir / f"sample_{start}_{end}.wav")
         sample.export(sample_path, format="wav")
@@ -55,17 +63,27 @@ class VoiceCloningService:
 
             out_path = str(self.cloned_dir / f"segment_{i}.wav")
             
-            print(f"[VoiceCloningService] Generating segment {i}: '{text[:30]}...' using sample {default_sample}")
+            # Extract a dynamic sample for this specific segment to better match the current speaker's tone
+            segment_duration = segment["end"] - segment["start"]
+            current_sample = default_sample
+            if segment_duration >= 3.0:
+                 # XTTS prefers >3s samples for good cloning. Grab exactly what they said here.
+                 try:
+                     current_sample = self.extract_speaker_sample(reference_audio, segment["start"], segment["end"])
+                 except Exception as e:
+                     print(f"[VoiceCloningService] Failed to extract dynamic sample for segment {i}, falling back to default. Error: {e}")
             
-            if not os.path.exists(default_sample):
-                print(f"[VoiceCloningService] ERROR: Speaker sample not found at {default_sample}")
-                raise FileNotFoundError(f"Speaker sample missing: {default_sample}")
+            print(f"[VoiceCloningService] Generating segment {i}: '{text[:30]}...' using sample {current_sample}")
+            
+            if not os.path.exists(current_sample):
+                print(f"[VoiceCloningService] ERROR: Speaker sample not found at {current_sample}")
+                raise FileNotFoundError(f"Speaker sample missing: {current_sample}")
 
             # Use original voice to speak translated text
             try:
                 self.tts.tts_to_file(
                     text=text,
-                    speaker_wav=default_sample,
+                    speaker_wav=current_sample,
                     language=language,
                     file_path=out_path
                 )
@@ -75,6 +93,7 @@ class VoiceCloningService:
             
             cloned_segments.append({
                 "start": segment["start"],
+                "end": segment["end"], # Ensure 'end' is passed along for downstream lip-sync
                 "audio_path": out_path
             })
             

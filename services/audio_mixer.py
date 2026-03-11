@@ -5,6 +5,7 @@ import pyloudnorm as pyln
 import soundfile as sf
 import numpy as np
 import scipy.signal
+import subprocess
 
 class AudioMixerEngine:
     def __init__(self, work_dir: Path):
@@ -29,7 +30,7 @@ class AudioMixerEngine:
         normalized = pyln.normalize.loudness(audio_data, current_loudness, target_lufs)
         return normalized
 
-    def mix_audio(self, primary_segments: list, secondary_audio: str, video_duration: float, bg_lufs: float = -21.0, fg_gain: float = 0.0) -> str:
+    def mix_audio(self, primary_segments: list, secondary_audio: str, video_duration: float, bg_lufs: float = -21.0, fg_gain: float = 0.0, language: str = "en") -> tuple[str, str]:
         """
         Primary (Translated): Adjusted by fg_gain.
         Secondary (Kannada Original): Normalized to bg_lufs relative to Translated, EQ dip.
@@ -64,13 +65,64 @@ class AudioMixerEngine:
         print(f"[AudioMixerEngine] Overlaying {len(primary_segments)} translated segments...")
         for i, seg in enumerate(primary_segments):
             start_ms = int(seg["start"] * 1000)
+            end_ms = int(seg.get("end", seg["start"] + 3) * 1000) # Fallback to 3s if end is missing
+            target_duration_ms = end_ms - start_ms
+            
             if not os.path.exists(seg["audio_path"]):
                 print(f"[AudioMixerEngine] WARNING: Audio file missing for segment {i}: {seg['audio_path']}")
                 continue
-            
+                
             en_audio = AudioSegment.from_file(seg["audio_path"])
+            current_duration_ms = len(en_audio)
             
-            # Apply user-requested foreground gain
+            # PERFECT LIP-SYNC: Use FFmpeg atempo to stretch/compress audio to match exactly
+            # We only do this if the difference is more than 5% to avoid artifacts on near-perfect matches
+            duration_ratio = current_duration_ms / max(1, target_duration_ms)
+            
+            if abs(1.0 - duration_ratio) > 0.05 and target_duration_ms > 0:
+                print(f"[AudioMixerEngine] Lip-Sync adjusting segment {i}: ratio {duration_ratio:.2f}x (Current: {current_duration_ms}ms, Target: {target_duration_ms}ms)")
+                
+                # FFmpeg atempo filter works between 0.5 and 100.0.
+                # If ratio > 1, audio is longer than target -> atempo > 1 (speed up).
+                # If ratio < 1, audio is shorter than target -> atempo < 1 (slow down).
+                stretch_factor = duration_ratio
+                
+                # Clamp stretch to avoid extreme distortions
+                stretch_factor = max(0.5, min(2.0, stretch_factor))
+                
+                stretched_path = str(self.work_dir / f"stretched_{i}.wav")
+                ffmpeg_cmd = [
+                    "ffmpeg", "-y", "-i", seg["audio_path"], 
+                    "-filter:a", f"atempo={stretch_factor}", 
+                    stretched_path
+                ]
+                try:
+                    subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    en_audio = AudioSegment.from_file(stretched_path)
+                    print(f"[AudioMixerEngine] Success: Stretched audio to {len(en_audio)}ms")
+                except Exception as e:
+                    print(f"[AudioMixerEngine] WARNING: FFmpeg atempo failed for segment {i}: {e}. Submitting raw audio.")
+            
+            # Clarity enhancement: Normalize the generated voice audio before mixing
+            # This ensures the synthesized voice is uniformly loud and punchy
+            en_audio = en_audio.normalize()
+            
+            # Clarity Enhancement 2: High-Pass Filter
+            # Removes low-end rumble/muddiness below 80Hz that XTTS sometimes generates
+            en_audio = en_audio.high_pass_filter(80)
+            
+            # Clarity Enhancement 3: Dynamic Range Compression
+            # Evens out the volume of the synthetic voice, making softer words louder 
+            # and preventing loud peaks, giving it a professional "broadcast" presence.
+            from pydub.effects import compress_dynamic_range
+            en_audio = compress_dynamic_range(en_audio, threshold=-20.0, ratio=4.0, attack=5.0, release=50.0)
+            
+            # Clarity Enhancement 4: Makeup Gain
+            # Compression reduces the peak volume of the audio. Normalizing it again brings the whole 
+            # constrained waveform up to max volume, making it extremely punchy and clear.
+            en_audio = en_audio.normalize()
+            
+            # Apply user-requested foreground gain on top of normalized audio
             if fg_gain != 0.0:
                 en_audio = en_audio + fg_gain
                 
@@ -80,6 +132,10 @@ class AudioMixerEngine:
         # Mix them: English (foreground) + Kannada (background)
         final_mix = background.overlay(foreground)
         
-        out_path = str(self.mixed_dir / "final_mixed.wav")
-        final_mix.export(out_path, format="wav")
-        return out_path
+        out_path_mixed = str(self.mixed_dir / f"final_mixed_{language}.wav")
+        final_mix.export(out_path_mixed, format="wav")
+        
+        out_path_fg = str(self.mixed_dir / f"final_foreground_{language}.wav")
+        foreground.export(out_path_fg, format="wav")
+        
+        return out_path_mixed, out_path_fg

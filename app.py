@@ -1,9 +1,11 @@
 # app.py
 
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import time
 from pipeline import TranslationPipeline
+from services.player_service import get_netflix_player_html
 
 # --- UI Configuration ---
 st.set_page_config(
@@ -114,7 +116,6 @@ st.markdown("""
 # --- Sidebar: Technical Architecture ---
 with st.sidebar:
     st.markdown("### 🏛️ Directorate of Media Technology")
-    st.image("https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg", width=60)
     st.title("System Architecture")
     
     with st.expander("🎥 Stage 1: Media Ingest", expanded=False):
@@ -158,8 +159,8 @@ with col1:
         st.write("Determine the sound balance between the original source audio and the newly synthesized speech.")
         bg_lufs = st.slider(
             "Original Background Loudness (LUFS)",
-            min_value=-40.0, max_value=-10.0, value=-21.0, step=1.0,
-            help="Higher means louder background. -21 LUFS is standard for 'ducking' audio under speech. -40 essentially mutes the background."
+            min_value=-40.0, max_value=-10.0, value=-25.0, step=1.0,
+            help="Higher means louder background. -25 LUFS is standard for 'ducking' audio heavily under speech. -40 essentially mutes the background."
         )
         fg_gain = st.slider(
             "Translated Speech Boost (dB)",
@@ -210,44 +211,54 @@ if "pipeline_results" in st.session_state:
     
     results = st.session_state["pipeline_results"]
     
-    # Player Settings
-    player_col1, player_col2 = st.columns([1, 2])
+    # Load subtitle dictionaries based on our keys
+    subtitle_dict = {}
+    if "en" in results["subtitles"]:
+        subtitle_dict["English"] = results["subtitles"]["en"]
+    if "hi" in results["subtitles"]:
+        subtitle_dict["Hindi"] = results["subtitles"]["hi"]
     
-    with player_col1:
-        st.markdown("#### Media Controls")
-        selected_audio = st.selectbox(
-            "🗣️ Audio Track",
-            options=list(results["videos"].keys()), # Original Kannada, English Dub, Hindi Dub
-            index=1 # Default to English Dub
-        )
-        
-        st.info("💡 **Subtitles**: Use the 'CC' button directly on the video player below to toggle English or Hindi subtitles on/off.")
-        
-        with open(results["videos"][selected_audio], "rb") as file:
+    # Generate custom Netflix-style HTML
+    player_html = get_netflix_player_html(
+        videos_dict=results["videos"],
+        subtitles_dict=subtitle_dict,
+        default_audio="English Dub"
+    )
+    
+    # Render full width player
+    components.html(player_html, height=500, scrolling=False)
+    
+    # Render Download Buttons Below Player
+    st.markdown("#### Media Downloads")
+    
+    # Master Video Download
+    if "master_video" in results and os.path.exists(results["master_video"]):
+        with open(results["master_video"], "rb") as file:
             st.download_button(
-                label=f"⬇️ Download {selected_audio} Video",
+                label="🌟 Download Master Multi-Track Video (.mkv)",
                 data=file,
-                file_name=f"{selected_audio.replace(' ', '_')}_{st.session_state['uploaded_filename']}",
-                mime="video/mp4"
+                file_name=f"Master_{st.session_state['uploaded_filename'].split('.')[0]}.mkv",
+                mime="video/x-matroska",
+                use_container_width=True,
+                type="primary"
             )
             
-    with player_col2:
-        # Load the selected video dynamically
-        active_video_path = results["videos"][selected_audio]
-        
-        # Load subtitle dictionaries
-        subtitle_dict = {}
-        if "en" in results["subtitles"]:
-            subtitle_dict["English"] = results["subtitles"]["en"]
-        if "hi" in results["subtitles"]:
-            subtitle_dict["Hindi"] = results["subtitles"]["hi"]
-            
-        with open(active_video_path, "rb") as vf:
-            st.video(
-                data=vf.read(),
-                format="video/mp4",
-                subtitles=subtitle_dict
-            )
+        st.markdown("*The Master SDK Video contains all isolated/overlaid translated audio tracks and subtitles multiplexed natively into a single file. Perfect for offline broadcast and multi-track players like VLC.*")
+        st.divider()
+        st.markdown("##### Individual Track Downloads")
+
+    dl_cols = st.columns(len(results["videos"]))
+    
+    for i, (audio_track, video_path) in enumerate(results["videos"].items()):
+        with dl_cols[i]:
+            with open(video_path, "rb") as file:
+                st.download_button(
+                    label=f"⬇️ Download {audio_track}",
+                    data=file,
+                    file_name=f"{audio_track.replace(' ', '_')}_{st.session_state['uploaded_filename']}",
+                    mime="video/mp4",
+                    use_container_width=True
+                )
             
     with st.expander("📊 Official Data Processing Report"):
         st.json(results["qc_report"])
